@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: hair-color-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn hair_color_server:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: PROJECT_ID
+        sync: false
+      - key: LOCATION
+        value: us-central1
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON
+        sync: false
