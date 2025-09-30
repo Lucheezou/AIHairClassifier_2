@@ -9,7 +9,7 @@ import json
 import tempfile
 import base64
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from google.oauth2 import service_account
 from google.auth.transport.requests import Request as AuthRequest
