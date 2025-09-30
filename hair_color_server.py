@@ -236,12 +236,8 @@ def find_matching_products(detected_colors):
 
 @app.route('/')
 def index():
-    """Health check endpoint"""
-    return jsonify({
-        'status': 'healthy',
-        'service': 'Hair Color Classification API',
-        'endpoint_id': ENDPOINT_ID
-    })
+    """Serve the HTML interface"""
+    return send_from_directory('.', 'hair_color_classifier.html')
 
 @app.route('/classify', methods=['POST'])
 def classify_hair_color():

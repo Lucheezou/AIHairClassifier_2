@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hair Color Classification & Product Recommendations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 3px dashed #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .upload-zone {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .upload-zone input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: transform 0.2s ease;
+            border: none;
+            margin: 5px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .image-preview {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .image-container {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .image-container img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            display: block;
+            margin: 30px auto;
+            transition: all 0.3s ease;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .analyze-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .color-results {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .color-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .color-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .confidence {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .products-section {
+            background: #fff;
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .product-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #4facfe;
+        }
+
+        .product-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .product-sku {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .product-match {
+            background: #e8f5e8;
+            color: #2d5a2d;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .product-link {
+            display: inline-block;
+            background: #4facfe;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ffe6e6;
+            color: #d63031;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Hair Color AI Classifier</h1>
+            <p>Upload up to 3 hair images to identify color tones and get product recommendations</p>
+        </div>
+
+        <div class="main-content">
+            <div class="upload-section">
+                <div class="upload-zone">
+                    <h3>Select Hair Images (Max 3)</h3>
+                    <p>Supported formats: JPG, PNG, JPEG</p>
+                    <br>
+                    <label for="imageInput" class="upload-btn">
+                        📸 Choose Images
+                    </label>
+                    <input type="file" id="imageInput" multiple accept="image/*" max="3">
+                </div>
+
+                <div class="image-preview" id="imagePreview"></div>
+
+                <button class="analyze-btn" id="analyzeBtn" disabled>
+                    🔍 Analyze Hair Colors
+                </button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing hair colors...</p>
+            </div>
+
+            <div class="error" id="error"></div>
+
+            <div class="results-section" id="results">
+                <div class="color-results">
+                    <h2>🎯 Detected Hair Colors</h2>
+                    <div id="colorResults"></div>
+                </div>
+
+                <div class="products-section">
+                    <h2>💄 Recommended Products</h2>
+                    <div id="productResults"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedImages = [];
+        const maxImages = 3;
+
+        document.getElementById('imageInput').addEventListener('change', handleImageSelect);
+        document.getElementById('analyzeBtn').addEventListener('click', analyzeImages);
+
+        function handleImageSelect(event) {
+            const files = Array.from(event.target.files).slice(0, maxImages);
+            selectedImages = [];
+
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+
+            files.forEach((file, index) => {
+                if (file.type.startsWith('image/')) {
+                    selectedImages.push(file);
+
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const container = document.createElement('div');
+                        container.className = 'image-container';
+                        container.innerHTML = `
+                            <img src="${e.target.result}" alt="Hair image ${index + 1}">
+                            <button class="remove-btn" onclick="removeImage(${index})">&times;</button>
+                        `;
+                        preview.appendChild(container);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            document.getElementById('analyzeBtn').disabled = selectedImages.length === 0;
+        }
+
+        function removeImage(index) {
+            selectedImages.splice(index, 1);
+            updateImagePreview();
+        }
+
+        function updateImagePreview() {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+
+            selectedImages.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const container = document.createElement('div');
+                    container.className = 'image-container';
+                    container.innerHTML = `
+                        <img src="${e.target.result}" alt="Hair image ${index + 1}">
+                        <button class="remove-btn" onclick="removeImage(${index})">&times;</button>
+                    `;
+                    preview.appendChild(container);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            document.getElementById('analyzeBtn').disabled = selectedImages.length === 0;
+        }
+
+        async function analyzeImages() {
+            if (selectedImages.length === 0) return;
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('analyzeBtn').disabled = true;
+
+            try {
+                const formData = new FormData();
+                selectedImages.forEach((file, index) => {
+                    formData.append(`image_${index}`, file);
+                });
+
+                const response = await fetch('/classify', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const results = await response.json();
+                displayResults(results);
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('error').innerHTML = `
+                    <strong>Error:</strong> ${error.message}<br>
+                    Please make sure the backend server is running and try again.
+                `;
+                document.getElementById('error').style.display = 'block';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        }
+
+        function displayResults(results) {
+            const colorResults = document.getElementById('colorResults');
+            const productResults = document.getElementById('productResults');
+
+            // Display detected colors
+            colorResults.innerHTML = '';
+            if (results.colors && results.colors.length > 0) {
+                results.colors.forEach(color => {
+                    const colorCard = document.createElement('div');
+                    colorCard.className = 'color-card';
+                    colorCard.innerHTML = `
+                        <div class="color-name">${color.name.replace(/_/g, ' ').toUpperCase()}</div>
+                        <div class="confidence">Confidence: ${(color.confidence * 100).toFixed(1)}%</div>
+                    `;
+                    colorResults.appendChild(colorCard);
+                });
+            } else {
+                colorResults.innerHTML = '<p>No hair colors detected with sufficient confidence.</p>';
+            }
+
+            // Display recommended products
+            productResults.innerHTML = '';
+            if (results.products && results.products.length > 0) {
+                results.products.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card';
+                    productCard.innerHTML = `
+                        <div class="product-name">${product.product_name}</div>
+                        <div class="product-sku">SKU: ${product.sku}</div>
+                        <div class="product-match">Match: ${product.match_type}</div>
+                        ${product.link ? `<a href="${product.link}" target="_blank" class="product-link">View Product</a>` : ''}
+                    `;
+                    productResults.appendChild(productCard);
+                });
+            } else {
+                productResults.innerHTML = '<p>No matching products found for the detected colors.</p>';
+            }
+
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
